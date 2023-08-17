@@ -14,8 +14,11 @@ const nextConfig = {
           resourceRegExp: /^@aws-sdk\/signature-v4-crt$/,
         })
       );
+    config.module.rules.push({
+      test: /\.node/,
+      use: 'raw-loader',
+    });
     return config;
   },
 };
-
 module.exports = nextConfig;

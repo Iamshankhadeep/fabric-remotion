@@ -1,3 +1,5 @@
+'use client';
+import { useState, useEffect, useRef } from "react";
 import { z } from "zod";
 import {
   AbsoluteFill,
@@ -12,7 +14,7 @@ import { loadFont, fontFamily } from "@remotion/google-fonts/Inter";
 import React, { useMemo } from "react";
 import { Rings } from "./Rings";
 import { TextFade } from "./TextFade";
-
+import { fabric } from 'fabric';
 loadFont();
 
 const container: React.CSSProperties = {
@@ -30,6 +32,41 @@ export const Main = ({ title }: z.infer<typeof CompositionProps>) => {
 
   const transitionStart = 2 * fps;
   const transitionDuration = 1 * fps;
+
+  const canvasEl = useRef(null)
+  const canvasElParent = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    const canvas = new fabric.Canvas(canvasEl.current)
+    const setCurrentDimensions = () => {
+      canvas.setHeight(canvasElParent.current?.clientHeight || 0)
+      canvas.setWidth(canvasElParent.current?.clientWidth || 0)
+      canvas.renderAll()
+    }
+    const resizeCanvas = () => {
+      setCurrentDimensions()
+    }
+    setCurrentDimensions()
+
+    var rect = new fabric.Rect();
+    rect.set({
+    width: 100, height: 50,
+    left: 100, top: 100,
+    fill: 'yellow',
+    angle: 30
+  })
+    canvas.add(rect)
+
+    window.addEventListener('resize', resizeCanvas, false)
+
+    // if (onReady) {
+    //   onReady(canvas)
+    // }
+
+    return () => {
+      canvas.dispose()
+      window.removeEventListener('resize', resizeCanvas)
+    }
+  }, [])
 
   const logoOut = spring({
     fps,
@@ -58,6 +95,17 @@ export const Main = ({ title }: z.infer<typeof CompositionProps>) => {
           <h1 style={titleStyle}>{title}</h1>
         </TextFade>
       </Sequence>
+      <AbsoluteFill>
+        <div ref={canvasElParent} style={{
+        width: '100%',
+        height: '100%',
+      }}>
+      <canvas ref={canvasEl} style={{
+        width: '100%',
+        height: '100%',
+      }} />
+    </div>
+      </AbsoluteFill>
     </AbsoluteFill>
   );
 };
